@@ -50,13 +50,12 @@ locationObj.cx = 0;
 locationObj.cy = 0;
 
 
-$("body").on("click",function(e){
-	[locationObj.cx,locationObj.cy] = projection.invert([e.clientX,e.clientY]);
-
+$("#mymap").on("click",function(e){
+	[locationObj.cx,locationObj.cy] = projection.invert([e.offsetX, e.offsetY]);
 	d3.transition()
 	  .duration(600)
 	  .tween("rotate", function(){
-	  	console.log([locationObj.cx,locationObj.cy])
+	  	console.log([locationObj.cx,locationObj.cy]);
 	  	r = d3.interpolate(projection.rotate(), [-locationObj.cx,-locationObj.cy]);
 		return function(t) {
 			projection.rotate(r(t)).scale(300);
