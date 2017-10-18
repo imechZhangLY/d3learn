@@ -36,8 +36,8 @@ var projection = d3.geoOrthographic()
 
 
 ******************************* 旋转规则********************************/
-var rotate = [255,-35,-4];
-// var rotate = [0,0,0]
+// var rotate = [255,-35,0];
+var rotate = [0,0,0]
 projection = projection.rotate(rotate);
 var path4Render = d3.geoPath().projection(projection);
 
@@ -48,30 +48,22 @@ locationObj.ox = 110;
 locationObj.oy = 45;
 locationObj.cx = 0;
 locationObj.cy = 0;
-console.log(locationObj);
-console.log(rotate);
+
 
 $("body").on("click",function(e){
 	[locationObj.cx,locationObj.cy] = projection.invert([e.clientX,e.clientY]);
 
-	console.log(locationObj);
-
-
-	var dx = locationObj.cx - locationObj.ox;
-	var dy = locationObj.cy - locationObj.oy; 
-
-	rotate[0] = rotate[0] - dx*0.3;
-	rotate[1] = rotate[1] - dy*0.3;
-	locationObj.ox = locationObj.cx;
-	locationObj.oy = locationObj.cy;
-	
-	projection.rotate(rotate);
-
-
-	console.log(mymap);
-	mymap.selectAll("path")
-		 .attr("d",path4Render);
-
+	d3.transition()
+	  .duration(600)
+	  .tween("rotate", function(){
+	  	console.log([locationObj.cx,locationObj.cy])
+	  	r = d3.interpolate(projection.rotate(), [-locationObj.cx,-locationObj.cy]);
+		return function(t) {
+			projection.rotate(r(t)).scale(300);
+			mymap.selectAll("path")
+				 .attr("d",path4Render);
+		}
+	  });
 });
 
 
@@ -108,11 +100,7 @@ function renderMap(error,root){
 		 	return color[i%20];
 		 })
 		 .attr("stroke-width",1)
-		 .attr("d", path4Render)
-		 .on("click", function(d,i){
-		 	d3.select(this).attr("transform",function(){
-		 	});
-		 });
+		 .attr("d", path4Render);
 }
 
 function markerOnMap(){
