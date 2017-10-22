@@ -50,20 +50,20 @@ locationObj.cx = 0;
 locationObj.cy = 0;
 
 
-$("#mymap").on("click",function(e){
-	[locationObj.cx,locationObj.cy] = projection.invert([e.offsetX, e.offsetY]);
-	d3.transition()
-	  .duration(600)
-	  .tween("rotate", function(){
-	  	console.log([locationObj.cx,locationObj.cy]);
-	  	r = d3.interpolate(projection.rotate(), [-locationObj.cx,-locationObj.cy]);
-		return function(t) {
-			projection.rotate(r(t)).scale(300);
-			mymap.selectAll("path")
-				 .attr("d",path4Render);
-		}
-	  });
-});
+// $("#mymap").on("click",function(e){
+// 	[locationObj.cx,locationObj.cy] = projection.invert([e.offsetX, e.offsetY]);
+// 	d3.transition()
+// 	  .duration(600)
+// 	  .tween("rotate", function(){
+// 	  	//console.log([locationObj.cx,locationObj.cy]);
+// 	  	r = d3.interpolate(projection.rotate(), [-locationObj.cx,-locationObj.cy]);
+// 		return function(t) {
+// 			projection.rotate(r(t)).scale(300);
+// 			mymap.selectAll("path")
+// 				 .attr("d",path4Render);
+// 		}
+// 	  });
+// });
 
 
 
@@ -104,5 +104,64 @@ function renderMap(error,root){
 
 function markerOnMap(){
 
+}
+function drag(lastPoint,currentPoint){
+	var coor,coor1
+	console.log(lastPoint)
+	coor = projection.invert(lastPoint)
+	coor1 = projection.invert(currentPoint)
+	console.log(lastPoint)
+	if(whichAxis(currentPoint,lastPoint) === 0){
+		//转纬度
+		if(currentPoint[1] > lastPoint[1]){
+			deg[1] -= Math.abs(coor1[1] - coor[1])
+		}else{
+			deg[1] += Math.abs(coor1[1] - coor[1])
+		}
+	}else{
+		//转经度
+		coor = toPositive(coor)
+		coor1 = toPositive(coor1)
+		deg[0] += coor1[0] - coor [0]
+	}
+	projection.rotate(deg)
+	mymap.selectAll("path").attr("d",path4Render);
+}
+
+var initialPoint = null, lastPoint = null,deg = [0,0]
+$("#mymap").on('mousedown' ,function(e){
+	initialPoint = [e.offsetX, e.offsetY]
+	lastPoint = initialPoint
+})
+$("#mymap").on('mouseup' ,function(e){
+	initialPoint = null
+})
+
+$("#mymap").on('mousemove',function(e){
+	var currentPoint = [e.offsetX, e.offsetY]
+	if(!initialPoint || dis(currentPoint,lastPoint) < 10){
+		return
+	}
+	drag(lastPoint,currentPoint)
+	lastPoint = currentPoint
+})
+
+function dis(point1,point2){
+	return Math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+}
+
+function toPositive(arr){
+	result = [arr[0], arr[1]]
+	if(arr[0] < 0){
+		result[0] += 360
+	}
+	return result
+}
+function whichAxis(currentPoint,lastPoint){
+	if(Math.abs(lastPoint[1] - currentPoint[1]) > Math.abs(lastPoint[0] - currentPoint[0])){
+		return 0 //纬度转
+	}else{
+		return 1 //转经度
+	}
 }
 
